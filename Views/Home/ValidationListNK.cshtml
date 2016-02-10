@@ -1,0 +1,258 @@
+﻿@model BPM_Wrapper.Models.VListModel
+
+@{
+	Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+	@*<meta name="viewport" content="width=device-width" />*@
+	<title>Список для валидации</title>
+
+	<link rel="stylesheet" href="../../Content/bootstrap3.css">
+	<link rel="stylesheet" href="../../Content/jquery-ui.css">
+	<link rel="stylesheet" href="../../Content/Site3.css">
+
+	<script type="text/javascript" src="../../Scripts/jquery-1.12.0.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-ui.js"></script>
+	<script type="text/javascript" src="../../Scripts/datepicker-ru.js"></script>
+
+	<script type="text/javascript">
+        var error = '@(ViewBag.Error)'
+        if (error) {
+            alert(error);
+        }
+
+        var result = '@(ViewBag.Result)';
+        if (result) {
+            alert(result);
+            cancel();
+        }
+
+        function cancel() {
+            var restoreUrl = '@(ViewBag.RestoreUrl)';
+            if (restoreUrl) {
+                location.assign(restoreUrl);
+            }
+        }
+	</script>
+
+</head>
+<body>
+	<form class="form-horizontal" method="post">
+		<input id="SysUnitId" name="SysUnitId" type="hidden" value="@Model.SysUnitId" />
+		<input id="CurrentUserId" name="CurrentUserId" type="hidden" value="@Model.CurrentUserId" />
+		<input id="responsibleOfficerId" name="OwnerId" type="hidden" value="@Model.OwnerId" />
+		<input id="submitButton" class="t-btn-wrapper t-btn-text t-btn-style-green actions-button-margin-right" type="submit" value="Назначить" />
+		<input id="cancelButton" onclick="cancel()" class="t-btn-wrapper t-btn-text t-btn-style-default actions-button-margin-right" type="button" value="Отменить" />
+
+		<div id="filterRow" class="form-group" style="line-height: 2vw; padding-top: 0.4vw">
+			<div class="col-lg-2 col-md-4" style="padding-top: 0.2vw; padding-bottom: 0.2vw;">
+				<select id="listFilter">
+					<option value="0">Все изменения</option>
+					<option value="1">Только собственные</option>
+				</select>
+			</div>
+			<div class="col-lg-2 col-md-4" style="padding-top: 0.2vw; padding-bottom: 0.2vw;">
+				@* <input type="checkbox" id="oldnew">Новый контрагент</input>*@
+			</div>
+		</div>
+
+		<table class="table">
+			<tbody id="serviceInformation">
+				<tr title="Пользователь">
+					<td></td>
+					<td class="col2" colspan="2">
+						<div class="form-group row">
+							<label for="CurrentUser" class="col-lg-2 col-md-2 control-label">Пользователь:</label>
+							<div id="imaginary_container">
+								<div class="input-group stylish-input-group">
+									<input id="CurrentUser" type="text-with-label-search" title="Текущий пользователь"
+										   class="form-control" name="CurrentUserString" value="@Model.CurrentUserString" readonly />
+									<span class="input-group-addon"></span>
+								</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td class="col2" colspan="2">
+						<div class="form-group row">
+							<label for="responsibleOfficerText" class="col-lg-2 col-md-2 control-label">Ответственный:</label>
+							<div id="imaginary_container">
+								<div class="input-group stylish-input-group">
+									<input id="responsibleOfficerText" name="OwnerString" value="@Model.OwnerString" type="text-with-label-search"
+										   class="form-control" title="Ответсвенный" style="cursor:text" readonly>
+									<span id="openResponsible" class="input-group-addon">
+										<a href="#win1" class="popupSearchOfficer-modal" value="">
+											<span class="glyphicon glyphicon-search"></span>
+										</a>
+									</span>
+								</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="table" style="min-width:950px">
+			<tbody id="itemsList">
+				<tr class="cc">
+					<td align="right">
+						<span title="Свернуть" class="glyphicon glyphicon-chevron-up chevron changed" onclick="rollUp('changed')"></span>
+						<span title="Развернуть" class="glyphicon glyphicon-chevron-down chevron changed hidden" onclick="expand('changed')"></span>
+					</td>
+					<td colspan="2">
+						<span class="cc text"><u><b>Изменённые:</b></u></span>
+					</td>
+				</tr>
+				<tr class="cc doc changed">
+					<td></td>
+					<td colspan="2">
+						<table>
+							<thead>
+								<tr>
+									<td type="hidden"></td>
+									<td><span type="text" title="Номер">Номер</span></td>
+									<td><span type="text" title="Название">Название</span></td>
+									<td><span type="text" title="Город">Город</span></td>
+									<td><span type="text" title="Дата">Дата</span></td>
+									<td><span type="text" title="Состояние">Состояние</span></td>
+									<td><span type="text" title="Изменивший">Изменивший</span></td>
+									<td><span type="text" title="Ответственный">Ответственный</span></td>
+									<td><input id="checkButton" class="t-btn-wrapper t-btn-text t-btn-style-default actions-button-margin-right" type="button" value="Выделить все" /></td>
+								</tr>
+							</thead>
+							<tbody>
+								@for (int i = 0; i < Model.ChangedItems.Count; i++)
+								{
+									<tr class="cc doc changed">
+										<td>
+											<input type="hidden" value="@Model.ChangedItems[i].AccountId" name="ChangedItems[@i].AccountId" />
+											<input class="ownerId" type="hidden" value="@Model.ChangedItems[i].OwnerId" name="ChangedItems[@i].OwnerId" />
+											<input type="hidden" value="@Model.ChangedItems[i].HUVAB" name="ChangedItems[@i].HUVAB" />
+										</td>
+										<td><span type="text" title="Номер">@Model.ChangedItems[i].HUVAB</span></td>
+										<td>
+											<span type="text" title="Название">
+												<a href="@Url.Action("Validation", "Home")?currentUser=@Model.SysUnitId&accountId=@Model.ChangedItems[i].AccountId">@Model.ChangedItems[i].Name</a>
+											</span>
+										</td>
+										<td>
+											<span type="text" title="Город">@Model.ChangedItems[i].City</span>
+										</td>
+										<td><span type="text" title="@Model.ChangedItems[i].ModifiedOn" title="Дата">@Model.ChangedItems[i].ModifiedOn</span></td>
+										<td><span type="text" title="Состояние">@Model.ChangedItems[i].State</span></td>
+										<td><span type="text" title="Состояние">Здесь должен быть ИЗМЕНИВШИЙ</span></td>
+										<td><span type="text" title="Ответственный">@Model.ChangedItems[i].Owner</span></td>
+										<td>
+											<span type="text" title="Выбор">
+												<input name="ChangedItems[@i].IsSelected" value="true" type="checkbox"
+													   @(Model.ChangedItems[i].IsSelected ? "checked" : "") />
+											</span>
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+				</tr>
+				<tr class="cc">
+					<td align="right">
+						<span title="Свернуть" class="glyphicon glyphicon-chevron-up chevron new" onclick="rollUp('new')"></span>
+						<span title="Развернуть" class="glyphicon glyphicon-chevron-down chevron new hidden" onclick="expand('new')"></span>
+					</td>
+					<td colspan="2">
+						<span class="cc text"><u><b>Новые:</b></u></span>
+					</td>
+				</tr>
+				<tr class="cc doc new">
+					<td></td>
+					<td colspan="2">
+						<table>
+							<thead>
+								<tr>
+									<td type="hidden"></td>
+									<td><span type="text" title="Номер">Номер</span></td>
+									<td><span type="text" title="Название">Название</span></td>
+									<td><span type="text" title="Город">Город</span></td>
+									<td><span type="text" title="Дата">Дата</span></td>
+									<td><span type="text" title="Состояние">Состояние</span></td>
+									<td><span type="text" title="Изменивший">Создавший</span></td>
+									<td><span type="text" title="Ответственный">Ответственный</span></td>
+									<td><input id="checkButton" class="t-btn-wrapper t-btn-text t-btn-style-default actions-button-margin-right" type="button" value="Выделить все" /></td>
+								</tr>
+							</thead>
+							<tbody>
+								@for (int i = 0; i < Model.NewItems.Count; i++)
+								{
+									<tr class="cc doc new">
+										<td>
+											<input type="hidden" value="@Model.NewItems[i].AccountId" name="NewItems[@i].AccountId" />
+											<input class="ownerId" type="hidden" value="@Model.NewItems[i].OwnerId" name="NewItems[@i].OwnerId" />
+											<input type="hidden" value="@Model.NewItems[i].HUVAB" name="NewItems[@i].HUVAB" />
+										</td>
+										<td><span type="text" title="Номер">@Model.NewItems[i].HUVAB</span></td>
+										<td>
+											<span type="text" title="Название">
+												<a href="@Url.Action("Validation", "Home")?currentUser=@Model.SysUnitId&accountId=@Model.NewItems[i].HUVAB">@Model.NewItems[i].Name</a>
+											</span>
+										</td>
+										<td>
+											<span type="text" title="Город">@Model.NewItems[i].City</span>
+										</td>
+										<td><span type="text" title="@Model.NewItems[i].ModifiedOn" title="Дата">@Model.NewItems[i].ModifiedOn</span></td>
+										<td><span type="text" title="Состояние">@Model.NewItems[i].State</span></td>
+										<td><span type="text" title="Состояние">Здесь должен быть СОЗДАВШИЙ</span></td>
+										<td><span type="text" title="Ответственный">@Model.NewItems[i].Owner</span></td>
+										<td>
+											<span type="text" title="Выбор">
+												<input name="NewItems[@i].IsSelected" value="true" type="checkbox"
+													   @(Model.NewItems[i].IsSelected ? "checked" : "") />
+											</span>
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+			</tbody>
+		</table>
+
+		<div id="responsibleDialog" class="popupSearch ts-messagebox-border-style-blue">
+			<span type="text" style="color: #64B8DF; font-size: 2em">Выбор Ответственного</span><br>
+			<input id="saveResponsible" type="button" value="Сохранить" class="t-btn-wrapper t-btn-text t-btn-style-green actions-button-margin-right" />
+			<input id="closeResponsible" type="button" value="Отмена" class="t-btn-wrapper t-btn-text t-btn-style-default actions-button-margin-right close-search-modal-officer" />
+			<div style="margin-top: 18px;">
+				<div class="col-xs-12">
+					<input id="responsibleFilter" type="text-with-label" class="col-xs-12" style="width:100%;margin-left:0;margin-right:0" value="" />
+					<select id="responsibleSelect" size="25" class="col-xs-12" style="overflow:auto">
+						@foreach (var t in Model.BelfaktaContacts)
+						{
+							<option value="@t.Id">@t.OldName</option>
+						}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div id="overlay"></div><!-- Пoдлoжкa -->
+	</form>
+
+	<script type="text/javascript" src="../../Scripts/gw-ui.js"></script>
+	<script>
+
+        function searchAccounts() {
+            var name = $('#contragentFilter').val();
+            name = encodeURIComponent(name);
+            console.log("searchAccounts: " + name);
+            $('#contragentSelect').load('@Url.Action("AccountList", "Home")?name=' + name);
+        }
+
+	</script>
+</body>
+</html>
+
+
